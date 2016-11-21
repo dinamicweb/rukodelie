@@ -208,11 +208,9 @@
 
 
             $.post('/cart/add', products, function (data) {
-                if (data.success == 0) {
-                    console.log(data.error);
-                } else {
-                    console.log(1);
-                }
+
+
+
 
             });
             return false;

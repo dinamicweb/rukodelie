@@ -11,8 +11,9 @@
         <p id="tovar_in_cells" class="index_cells tovar_in_cells">{{Session::get('cart.count_products')}} {{\App\Http\Controllers\CartController::declension(Session::get('cart.count_products'), "товар", "товара", "товаров")}}</p>
 
         @else
-                 <a class="index_cells" href="#">Ваша корзина пуста</a>
+                 <a id="basket-page"  class="index_cells" href="#">Ваша корзина пуста</a>
     @endif
+    <a style="display: none" id="basket-empty" class="index_cells" href="#">Ваша корзина пуста</a>
 </div>
 @if(Session::get('cart.discont.messages_basket')=='')
     <div style="display: none" class="diskount">

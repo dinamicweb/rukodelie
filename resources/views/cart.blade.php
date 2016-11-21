@@ -291,7 +291,12 @@
                 }else if(data.success==2){
 
                     $(".cell_center").css("display", "none");
+                    $("#basket_index_cells").css("display", "none");
+                    $("#basket_diskount_p").css("display", "none");
+                    $("#tovar_in_cells").css("display", "none");
                     $(".empty_cell").css("display", "block");
+                    $("#basket-empty").css("display", "block");
+
 
 
                 }
