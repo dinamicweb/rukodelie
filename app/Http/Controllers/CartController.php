@@ -384,7 +384,7 @@ class CartController extends Controller
         return $discont;
     }
 
-    protected function declension ($number, $one, $two, $five)
+    static function declension ($number, $one, $two, $five)
     {
         if (($number - $number % 10) % 100 != 10) {
             if ($number % 10 == 1) {
@@ -399,6 +399,34 @@ class CartController extends Controller
         }
         return $result;
     }
+
+    public function DeleteProductCart(Request $request){
+
+        $index_arr=$request->id;
+
+
+        $cart=Session::get('cart');
+
+        unset($cart['products'][$index_arr]);
+        if(count($cart['products'])==0){
+
+            Session::forget('cart');
+
+            return response()->json(["success"=>2]);
+
+        }else {
+        $cart['count_products'] = $this->countProductsCart($cart['count_products'], $cart['products']);
+        $cart['total_price_cart'] = $this->totalPriceProductsCart($cart['total_price_cart'], $cart['products']);
+        $discont = $this->getDiscount();
+        $cart['discont'] = $this->getTotalDiscount($discont, $cart);
+
+            Session::put('cart', $cart);
+        }
+        return response()->json(["success"=>1, "cart"=>$cart, "id"=>$index_arr]);
+
+    }
+
+
 
     protected function UpdateTotalPriceDiscount($total_price)
     {
@@ -446,7 +474,10 @@ class CartController extends Controller
 
             $cart['discont'] = $this->getTotalDiscount($discont, $cart);
 
+
             Session::put('cart', $cart);
+
+
         } else {
 // Если корзина в сессии отсутствует то пользователь добавляет 1й раз и мы создаем для него корзину
             $this->createNewCart($product_id, $product_cart, $units_id);
@@ -466,10 +497,10 @@ class CartController extends Controller
         $count_products = $request->count_product;
 
         $cart = Session::get('cart');
-
-        for ($i = 0; $i < count($cart['products']); $i++) {
+         $id='';
+        foreach ($cart['products'] as $i =>$product) {
             if (($cart['products'][$i]['product_id'] == $product_id) && ($cart['products'][$i]['units_id'] == $units_id) && ($cart['products'][$i]['colors_id'] == $colors_id)) {
-
+                $id=$i;
                 $cart['products'][$i]['count_product'] = $count_products;
                 $cart['products'][$i]['total_product_price'] = $cart['products'][$i]['price'] * $cart['products'][$i]['count_product'];
             }
@@ -483,7 +514,7 @@ class CartController extends Controller
 
         Session::put('cart', $cart);
 
-        return response()->json(["success" => 1, 'cart' => $cart]);
+        return response()->json(["success" => 1, "count"=>$id,  'cart' => $cart]);
 
     }
 
@@ -515,9 +546,14 @@ class CartController extends Controller
 
     public function cart()
     {
-        $cart = Session::get('cart');
+        if(Session::has('cart')) {
+            $cart = Session::get('cart');
+        }else{
+            $cart='';
+        }
 
 //        dd($cart);
+
 
         return view('cart', ['cart' => $cart]);
     }

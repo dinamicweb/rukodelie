@@ -50246,8 +50246,11 @@ color: #6d2f6b;
 }
 
 .empty_cell{
-margin: 0 auto;
-margin-top: 50px;	
+	margin: 0 auto;
+	margin-top: 50px;
+	width: 50%;
+	text-align: center;
+	height: 100px;
 }
 .empty{
 color: rgb(159,61,156);	

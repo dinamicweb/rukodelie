@@ -3,6 +3,20 @@
 
 
 @section('content')
+@if(empty($cart))
+
+         <div class="empty_cell">
+            <p class="empty">Ваша корзина пуста</p>
+            <a href="/" class="to_catalog">Перейти в каталог</a>
+        </div>
+@else
+
+
+
+       <div style="display: none" class="empty_cell">
+            <p class="empty">Ваша корзина пуста</p>
+            <a href="/" class="to_catalog">Перейти в каталог</a>
+        </div>
 
     <div class="cell_center">
         <p class="cell_catalog">Корзина</p>
@@ -10,10 +24,7 @@
         <div class="cell_li"></div>
 
         <div class="cell_article">
-            @if(empty($cart))
 
-                Нет товаров
-            @else
 
                 <div class="cell_table_head">
                     <div class="cell_head_1">
@@ -32,27 +43,27 @@
                         <p class="cell_tovar_val tovar_cash">Сумма</p>
                     </div>
                 </div>
-                @for($i=0; $i<count($cart['products']); $i++)
+                @foreach($cart['products'] as $i => $product)
 
 
                     <div id="tovar_{{$i}}" class="cell_tovar">
 
                         <div class="cell_body_1">
                             <input type="hidden" id="product_id_{{$i}}" name="product_id"
-                                   value="{{$cart['products'][$i]['product_id']}}">
+                                   value="{{$product['product_id']}}">
                             <input type="hidden" id="units_id_{{$i}}" name="units_id"
-                                   value="{{$cart['products'][$i]['units_id']}}">
+                                   value="{{$product['units_id']}}">
                             <input type="hidden" id="colors_id_{{$i}}" name="colors_id"
-                                   value="{{$cart['products'][$i]['colors_id']}}">
+                                   value="{{$product['colors_id']}}">
 
                             <div id="tov_img_1" class="cell_tov_img ">
                                 <img style=" width: 100%; height: 100%;"
-                                     src="/upload/products/{{\App\Helpers\ProductHelpers::getImgProduct($cart['products'][$i]['product_id'])}}">
+                                     src="/upload/products/{{\App\Helpers\ProductHelpers::getImgProduct($product['product_id'])}}">
                             </div>
                             <label for="tov_img_1"
-                                   class="cell_tov_name">{{\App\Helpers\ProductHelpers::getNameProduct($cart['products'][$i]['product_id'])}}
-                                (цвет: @if($cart['products'][$i]['colors_id']==0) Нет
-                                цвета @else {{\App\Helpers\ColorsHelper::getNameColor($cart['products'][$i]['colors_id'])}} @endif </label>
+                                   class="cell_tov_name">{{\App\Helpers\ProductHelpers::getNameProduct($product['product_id'])}}
+                                (цвет: @if($product['colors_id']==0) Нет
+                                цвета @else {{\App\Helpers\ColorsHelper::getNameColor($product['colors_id'])}} @endif </label>
                         </div>
 
                         <div class="cell_body_2">
@@ -61,8 +72,8 @@
 
                                 <div id="sht_{{$i}}" class="cell_sht">
                                     <input id="val_{{$i}}" data-id="{{$i}}" class="cell_val"
-                                           value="{{$cart['products'][$i]['count_product']}}" min="1"
-                                           max="{{\App\Http\Controllers\CartController::getStockProduct($cart['products'][$i]['product_id'], $cart['products'][$i]['colors_id'], $cart['products'][$i]['units_id'])}}"
+                                           value="{{$product['count_product']}}" min="1"
+                                           max="{{\App\Http\Controllers\CartController::getStockProduct($product['product_id'], $product['colors_id'], $product['units_id'])}}"
                                            type="number" onchange="mon(this.getAttribute('data-id'))">
                                 </div>
                                 <p id="pl_{{$i}}" data-id="{{$i}}" class="cell_plmin cell_pl"></p>
@@ -70,22 +81,24 @@
                         </div>
 
                         <div class="cell_body_3">
-                            <p class="cell_tov_izm">{{\App\Helpers\UnitsHelper::getNameAbbUnits($cart['products'][$i]['units_id'])}}
+                            <p class="cell_tov_izm">{{\App\Helpers\UnitsHelper::getNameAbbUnits($product['units_id'])}}
                                 .</p>
                         </div>
 
                         <div class="cell_body_4">
-                            <p class="cell_tov_pr_val">{{$cart['products'][$i]['price']}} рублей</p>
+                            <p class="cell_tov_pr_val">{{$product['price']}} рублей</p>
                         </div>
 
                         <div class="cell_body_5">
                             <p id="tov_cash_val_{{$i}}"
-                               class="cell_tov_cash_val">{{$cart['products'][$i]['total_product_price']}} рублей</p>
+                               class="cell_tov_cash_val">{{$product['total_product_price']}} рублей</p>
 
                             <div data-id="{{$i}}" class="cell_del"></div>
                         </div>
                     </div>
-                @endfor
+                @endforeach
+
+
 
                 <div class="cell_bu">
                     @if(empty($cart['discont']['messages']))
@@ -230,7 +243,61 @@
 
             var id = $(this).data('id');
 
-            alert(id);
+            params={};
+            params.id=id;
+
+            $.post('/cart/delete', params, function (data) {
+
+                if(data.success==1){
+                    $( "#tovar_"+data.id).remove();
+                    console.log(data);
+                    updateContextCart(data.cart.products);
+                    $("#cell_price").text('Итого '+ data.cart.total_price_cart +' рублей');
+                    $("#cell_summ").html(data.cart.discont.message);
+
+                    $(".diskount_p").html(data.cart.discont.messages);
+                    $("#basket_diskount_p").html(data.cart.discont.messages_basket);
+
+                    if(data.cart.total_price_cart>data.cart.discont.total_price_discont){
+                        $('#basket_index_cells').html(data.cart.discont.total_price_discont +' руб.')
+                        var title=declOfNum(data.cart.count_products,['товар','товара','товаров'])
+
+                        $('#tovar_in_cells').html(data.cart.count_products +' '+title)
+                        $("#cell_price").addClass('stroke');
+
+                    }else{
+                        $('#basket_index_cells').html(data.cart.total_price_cart +' руб.')
+
+                        var title=declOfNum(data.cart.count_products,['товар','товара','товаров'])
+                        $('#tovar_in_cells').html(data.cart.count_products +' '+title)
+                        $("#cell_price").removeClass('stroke');
+                    }
+
+
+                    if(data.cart.total_price_cart==data.cart.discont.total_price_discont){
+                        $("#cell_summ").css("display", "none");
+                    }else{
+                        $("#cell_summ").css("display", "block");
+                    }
+
+                    if(data.cart.discont.messages===''){
+                        $(".diskount_p").css("display", "none");
+                        $(".diskount").css("display", "none");
+
+                    }else{
+                        $(".diskount_p").css("display", "block");
+                        $(".diskount").css("display", "inline-block");
+                    }
+                }else if(data.success==2){
+
+                    $(".cell_center").css("display", "none");
+                    $(".empty_cell").css("display", "block");
+
+
+                }
+
+
+            });
 
         });
 
@@ -299,12 +366,22 @@
         }
 
         function updateContextCart(data) {
-            var i;
-            for (i = 0; i < data.length; i++) {
 
-                $("#tov_cash_val_" + i).html(data[i].total_product_price + ' рублей');
+            console.log(data);
+            for (i in data) {
+
+                $("#tov_cash_val_"+i).html(data[i].total_product_price + ' рублей');
 
             }
+//            var i;
+//            for (i = 2; i < data.length; i++) {
+//
+//                $("#tov_cash_val_"+i).html(data[i].total_product_price + ' рублей');
+//            }
+
+
+
+//            }
 //                console.log(data.length);
         }
     </script>

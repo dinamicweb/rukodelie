@@ -48,6 +48,7 @@ Route::post('/products/change/units', 'CatalogController@ChangeUnitsProducts');
 //Добавление и обновление колличества  товара в корзине
 Route::post('/cart/add', 'CartController@addProductCart');
 Route::post('/cart/update', 'CartController@UpdateProductCart');
+Route::post('/cart/delete', 'CartController@DeleteProductCart');
 
 
 

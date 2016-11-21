@@ -16,6 +16,7 @@ class VerifyCsrfToken extends BaseVerifier
         '/cart',
         '/cart/add',
         '/products/change/units',
-        '/cart/update'
+        '/cart/update',
+        '/cart/delete'
     ];
 }
