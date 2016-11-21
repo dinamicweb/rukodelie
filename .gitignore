@@ -1,0 +1,12 @@
+/vendor
+/node_modules
+/template/.idea/*.sql/public/storage
+Homestead.yaml
+Homestead.json
+.env
+.env.example
+#настройки проекта
+/.idea
+/template
+*.sql
+
